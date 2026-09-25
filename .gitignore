@@ -1,0 +1,6 @@
+# third-party base builds (the game itself; see README)
+ref/
+# local tooling
+.venv/
+__pycache__/
+.DS_Store
