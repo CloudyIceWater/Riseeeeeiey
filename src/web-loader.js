@@ -10,6 +10,8 @@
 	var CACHE = 'rise-payload-' + V;
 	var total = %TOTAL%, done = 0;
 	window.__riseBin = {};
+	var nativeFetch = window.fetch.bind(window); // before the page wraps fetch
+	try { if (navigator.serviceWorker && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(function () {}); } catch (e) {}
 
 	function status(t) {
 		var el = document.getElementById('boot_status');
@@ -76,7 +78,13 @@
 		return (async function () {
 			var cache = await cacheP;
 			var hit = cache ? await cache.match(wasmKey(name)) : null;
-			if (hit) return hit;
+			if (hit) {
+				// through the service worker: a real .wasm request, so its compiled code gets cached too
+				if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+					try { var sw = await nativeFetch(wasmKey(name)); if (sw.ok) return sw; } catch (e) {}
+				}
+				return hit;
+			}
 			var id = WASM[name];
 			if (!window.__riseBin[id]) window.__riseBin[id] = new Uint8Array(await (await fetchBin(id)).arrayBuffer()); // cache was cleared under us
 			var resp = await unpack();

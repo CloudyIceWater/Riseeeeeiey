@@ -288,10 +288,9 @@
 	(function () {
 		var oRaf = window.requestAnimationFrame, oCancel = window.cancelAnimationFrame;
 		if (!oRaf) return;
-		var lastT = 0, ids = {}, nextId = 1, rafStats = window.__riseRaf = { frames: 0, calls: 0, cap: frameCap };
+		var lastT = 0, ids = {}, nextId = 1, rafStats = window.__riseRaf = { frames: 0, cap: frameCap };
 		window.requestAnimationFrame = function (cb) {
 			var id = nextId++;
-			rafStats.calls++;
 			var tick = function (t) {
 				var cap = frameCap();
 				if (cap && cap < 60 && t - lastT < 1000 / cap - 4) { ids[id] = oRaf.call(window, tick); return; }

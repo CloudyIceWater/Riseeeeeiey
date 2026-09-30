@@ -230,6 +230,7 @@ def make_web(html, version):
     html = html[:i] + '<script type="text/javascript">\n' + loader + '\n</script>' + html[i:]
     open(os.path.join(WEB, 'index.html'), 'w', encoding='utf-8').write(html)
     open(os.path.join(WEB, 'version.txt'), 'w').write(version)
+    shutil.copy(os.path.join(ROOT, 'src', 'sw.js'), os.path.join(WEB, 'sw.js'))
     print('web build: index.html %.1f MB + %d payloads %.1f MB' % (
         os.path.getsize(os.path.join(WEB, 'index.html')) / 1e6, len(ids), total / 1e6))
 
