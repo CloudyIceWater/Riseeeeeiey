@@ -101,7 +101,6 @@
 	// cached) page, refresh the cached page and reload once.
 	(function () {
 		try {
-			if (sessionStorage.getItem('rise.updated') === V) return;
 			fetch('version.txt?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (latest) {
 				latest = latest.trim();
 				if (latest && latest !== V && sessionStorage.getItem('rise.updated') !== latest) {

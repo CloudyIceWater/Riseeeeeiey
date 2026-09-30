@@ -411,7 +411,10 @@
 		// Unknown or still-fading screens are checked on every frame, and the check
 		// runs inside the game's own frame, so our button lands in the same frame the
 		// game's button first shows up (the "Credits" label is never visible on its own).
-		var gap = (now < boostUntil || !screen.name || screen.level < 0.97) ? 0 : 160;
+		// Reading the frame makes the browser wait for the GPU, so only look every frame
+		// right after input (a screen may be changing) or while a known screen fades in.
+		// Loading screens, the inventory, chat etc. are checked a few times a second.
+		var gap = (now < boostUntil || (screen.name && screen.level < 0.97)) ? 0 : screen.name ? 300 : 400;
 		if (!pendingCheck && now - lastCheck < gap) return;
 		pendingCheck = false; lastCheck = now;
 		if (document.pointerLockElement || isOpen || !gameReady()) { if (screen.name) setScreen(null); return; }
@@ -1437,7 +1440,11 @@
 			return;
 		}
 		if (isRShift(e) && !e.repeat && gameReady()) { e.preventDefault(); e.stopImmediatePropagation(); openPanel('video'); return; }
-		if (!document.pointerLockElement) { pendingCheck = true; boostUntil = performance.now() + 2500; return; }
+		if (!document.pointerLockElement) {
+			// only keys that can switch screens (typing in chat or a text box doesn't)
+			if (/^(Escape|Enter|NumpadEnter|Tab|Space|Arrow)/.test(e.code || '')) { pendingCheck = true; boostUntil = performance.now() + 2500; }
+			return;
+		}
 		var c = codeOf(e);
 		keysDown[c] = true;
 		if (c === 'F1' && !e.repeat) hideGui = !hideGui;
@@ -1479,7 +1486,8 @@
 		} else if (!isOpen && e.composedPath().indexOf(host) < 0) {
 			// a click in a menu may change screen: check every frame for a while
 			// (the watcher runs inside the game's frame, so buttons never lag behind)
-			pendingCheck = true; boostUntil = performance.now() + 2500;
+			// leaving a world (Save and Quit / Disconnect): saving can take a while before the title shows
+			pendingCheck = true; boostUntil = performance.now() + (screen.name === 'pause' ? 20000 : 2500);
 		}
 	}, true);
 	window.addEventListener('mouseup', function (e) { delete keysDown['M' + e.button]; pendingCheck = true; }, true);
